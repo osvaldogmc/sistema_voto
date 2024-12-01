@@ -12,6 +12,30 @@ def home(request):
 
 def formulario_votacion(request):
     try:
+        candidato1 = Candidato.objects.filter(nombre="Jose Antonio", apellido="Kast").first()
+        if candidato1 is None:
+            candidato1 = Candidato(
+                nombre = "Jose Antonio",
+                apellido = "Kast"
+            )
+            candidato1.save()
+        
+        candidato2 = Candidato.objects.filter(nombre="Evelyn", apellido="Matthei").first()
+        if candidato2 is None:
+            candidato2 = Candidato(
+                nombre = "Evelyn",
+                apellido = "Matthei"
+            )
+            candidato2.save()
+
+        candidato3 = Candidato.objects.filter(nombre="Franco", apellido="Parisi").first()
+        if candidato3 is None:
+            candidato3 = Candidato(
+                nombre = "Franco",
+                apellido = "Parisi"
+            )
+            candidato3.save()
+
         context = {'candidatos': []}
         candidatos = Candidato.objects.all()
         if candidatos:
