@@ -3,52 +3,55 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from django.http import JsonResponse
 from .models import Votante, Voto, Candidato
 from django.contrib.auth.decorators import login_required
+import sys
 
 def home(request):
     return render(request, 'index.html')
 
 def formulario_votacion(request):
-    context = {'candidatos': []}
-    candidatos = Candidato.objects.all()
-    if candidatos:
-        for candidato in candidatos:
-            context['candidatos'].append({
-                'id': candidato.id,
-                'nombre': f'{candidato.nombre} {candidato.apellido}',
-            })
+    try:
+        context = {'candidatos': []}
+        candidatos = Candidato.objects.all()
+        if candidatos:
+            for candidato in candidatos:
+                context['candidatos'].append({
+                    'id': candidato.id,
+                    'nombre': f'{candidato.nombre} {candidato.apellido}',
+                })
 
-    if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        apellido = request.POST.get("apellido")
-        rut = request.POST.get("rut")
-        correo = request.POST.get("correo")
-        candidato = request.POST.get("candidato")
-        
+        if request.method == "POST":
+            nombre = request.POST.get("nombre")
+            apellido = request.POST.get("apellido")
+            rut = request.POST.get("rut")
+            correo = request.POST.get("correo")
+            candidato = request.POST.get("candidato")
+            
 
-    #    Valida que el votante exista, y si no existe lo crea
-        if Votante.objects.filter(rut=rut).exists():
-            votante = Votante.objects.filter(rut=rut).first()
-        else:
-            votante = Votante(rut=rut, nombre=nombre, correo=correo, apellido=apellido)
-            votante.save()
-        
-    #   Valida que el votante no haya votado
-        if Voto.objects.filter(votante=votante).exists():
-            context['tipo'] = 'error'
-            context['mensaje'] = 'El votante ya votó'
-        else:
-            voto = Voto(
-                votante = votante,
-                candidato = Candidato(candidato)
-            )
-            voto.save()
-            context['tipo'] = 'succes'
-            context['mensaje'] = f'El votante {votante.nombre} {votante.apellido} voto con exito!'
+        #    Valida que el votante exista, y si no existe lo crea
+            if Votante.objects.filter(rut=rut).exists():
+                votante = Votante.objects.filter(rut=rut).first()
+            else:
+                votante = Votante(rut=rut, nombre=nombre, correo=correo, apellido=apellido)
+                votante.save()
+            
+        #   Valida que el votante no haya votado
+            if Voto.objects.filter(votante=votante).exists():
+                context['tipo'] = 'error'
+                context['mensaje'] = 'El votante ya votó'
+            else:
+                voto = Voto(
+                    votante = votante,
+                    candidato = Candidato(candidato)
+                )
+                voto.save()
+                context['tipo'] = 'succes'
+                context['mensaje'] = f'El votante {votante.nombre} {votante.apellido} voto con exito!'
 
-    return render(request, 'formulario_votacion.html', context)
+        return render(request, 'formulario_votacion.html', context)
+    except Exception as e:
+        print(f'Error en la linea {format(sys.excinfo()[-1].tblineno)} {type(e).__name} {e}')
 
 @login_required
 def resultados(request):
