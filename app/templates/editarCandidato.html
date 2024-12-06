@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2>Gestión de candidatos</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form action="/edicionCandidato/" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtId" name="txtId" value="{{editar.id}}" class="form-control" placeholder="ID" maxlength="30" readonly required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtNombre" name="txtNombre" value="{{editar.nombre}}" class="form-control" placeholder="Nombre" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtApellido" name="txtApellido" value="{{editar.apellido}}" class="form-control" placeholder="Apellido" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtPartido" name="txtPartido" value="{{editar.partido}}" class="form-control" placeholder="Partido" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    </div>
+</div>
+
+{% endblock %}

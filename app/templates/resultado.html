@@ -26,7 +26,12 @@
             margin: 0;
         }
 
-        .btn-salir {
+        .header .btn-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-salir, .btn-nuevo {
             padding: 10px 15px;
             background-color: #ff4c4c;
             color: white;
@@ -38,8 +43,16 @@
             text-decoration: none;
         }
 
-        .btn-salir:hover {
+        .btn-salir:hover, .btn-nuevo:hover {
             background-color: #d43c3c;
+        }
+
+        .btn-nuevo {
+            background-color: #28a745;
+        }
+
+        .btn-nuevo:hover {
+            background-color: #218838;
         }
 
         table {
@@ -74,7 +87,10 @@
 <body>
     <div class="header">
         <h1>Resultados de Votación</h1>
+        <div class="btn-container">
             <a href="/signout" class="btn-salir">Salir</a>
+            <a href="/candidatos" class="btn-nuevo">Editar Candidatos</a>
+        </div>
     </div>
     <table>
         <thead>

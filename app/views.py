@@ -12,30 +12,6 @@ def home(request):
 
 def formulario_votacion(request):
     try:
-        candidato1 = Candidato.objects.filter(nombre="Jose Antonio", apellido="Kast").first()
-        if candidato1 is None:
-            candidato1 = Candidato(
-                nombre = "Jose Antonio",
-                apellido = "Kast"
-            )
-            candidato1.save()
-        
-        candidato2 = Candidato.objects.filter(nombre="Evelyn", apellido="Matthei").first()
-        if candidato2 is None:
-            candidato2 = Candidato(
-                nombre = "Evelyn",
-                apellido = "Matthei"
-            )
-            candidato2.save()
-
-        candidato3 = Candidato.objects.filter(nombre="Franco", apellido="Parisi").first()
-        if candidato3 is None:
-            candidato3 = Candidato(
-                nombre = "Franco",
-                apellido = "Parisi"
-            )
-            candidato3.save()
-
         context = {'candidatos': []}
         candidatos = Candidato.objects.all()
         if candidatos:
@@ -136,3 +112,45 @@ def ingreso(request):
 def signout(request):
     logout(request)
     return redirect('ingreso')
+
+@login_required
+def editCandidatos(request):
+    candi = Candidato.objects.all()
+    return render(request, 'candidatos.html', {"candi": candi})
+
+def registrarCandidato(request):
+    try:
+        nombre = request.POST['txtNombre']
+        apellido = request.POST['txtApellido']
+        partido = request.POST['txtPartido']
+
+        registro = Candidato.objects.create(nombre=nombre, apellido=apellido, partido=partido)
+    except Exception as e:
+        print(f'Error en la linea {format(sys.exc_info()[-1].tb_lineno)} {type(e).__name__} {e}')
+    return redirect('/candidatos/')
+
+
+def editarCandidato(request, candidato_id):
+    editar = Candidato.objects.get(id=candidato_id)
+    return render(request, 'editarCandidato.html', {"editar": editar})
+
+def edicionCandidato(request,candidato_id):
+    # id = request.POST['txtId']
+    nombre = request.POST['txtNombre']
+    apellido = request.POST['txtApellido']
+    partido = request.POST['txtPartido']
+
+    editar = Candidato.objects.get(id=candidato_id)
+    # editar.id = id
+    editar.nombre = nombre
+    editar.apellido = apellido
+    editar.partido = partido
+    editar.save()
+
+    return redirect('/candidatos/')
+
+
+def eliminarCandidato(request, candidato_id):
+    eliminar = Candidato.objects.get(id=candidato_id)
+    eliminar.delete()
+    return redirect('/candidatos/')
