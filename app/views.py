@@ -3,12 +3,16 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .models import Votante, Voto, Candidato
 from django.contrib.auth.decorators import login_required
 import sys
+import re
+from .models import Votante, Voto, Candidato
+from .functions import encode, decode
+
 
 def home(request):
     return render(request, 'index.html')
+
 
 def formulario_votacion(request):
     try:
@@ -21,13 +25,22 @@ def formulario_votacion(request):
                     'nombre': f'{candidato.nombre} {candidato.apellido}',
                 })
 
+        if request.method == "GET":
+            return redirect('home')
+        
         if request.method == "POST":
             nombre = request.POST.get("nombre")
             apellido = request.POST.get("apellido")
-            rut = request.POST.get("rut")
+            rut = request.POST.get("txtRut")
             correo = request.POST.get("correo")
             candidato = request.POST.get("candidato")
+
+            if not validar_rut(str(rut)):
+                context['tipo'] = 'error'
+                context['mensaje'] = 'RUT inválido'
+                return render(request, 'formulario_votacion.html', context)
             
+            context['rut'] = rut
 
         #    Valida que el votante exista, y si no existe lo crea
             if Votante.objects.filter(rut=rut).exists():
@@ -50,8 +63,33 @@ def formulario_votacion(request):
                 context['mensaje'] = f'El votante {votante.nombre} {votante.apellido} voto con exito!'
 
         return render(request, 'formulario_votacion.html', context)
-    except Exception as e:
-        print(f'Error en la linea {format(sys.excinfo()[-1].tblineno)} {type(e).__name} {e}')
+    except IntegrityError:
+        return render(request, 'formulario_votacion.html', context)
+    
+
+def validar_rut(rut: str):
+    rut = rut.replace(".", "").replace("-", "")  # Eliminar puntos y guion
+    if not re.match(r'^\d{7,8}[0-9Kk]$', rut):  # Verifica si el formato es correcto
+        return False
+
+    cuerpo = rut[:-1]
+    dv = rut[-1].upper()  # Convertir el DV a mayúscula
+
+    suma = 0
+    multiplicador = 2
+    for i in reversed(cuerpo):
+        suma += int(i) * multiplicador
+        multiplicador = multiplicador + 1 if multiplicador < 7 else 2
+
+    dv_calculado = 11 - (suma % 11)
+    if dv_calculado == 11:
+        dv_correcto = "0"
+    elif dv_calculado == 10:
+        dv_correcto = "K"
+    else:
+        dv_correcto = str(dv_calculado)
+
+    return dv == dv_correcto
 
 @login_required
 def resultados(request):
@@ -116,7 +154,16 @@ def signout(request):
 @login_required
 def editCandidatos(request):
     candi = Candidato.objects.all()
-    return render(request, 'candidatos.html', {"candi": candi})
+    candidatos = []
+    for c in candi:
+        candidatos.append({
+           'id': encode(str(c.id)),
+            'nombre': c.nombre,
+            'apellido': c.apellido,
+            'partido': c.partido,
+        })
+    return render(request, 'candidatos.html', {"candi": candidatos})
+
 
 def registrarCandidato(request):
     try:
@@ -131,17 +178,23 @@ def registrarCandidato(request):
 
 
 def editarCandidato(request, candidato_id):
-    editar = Candidato.objects.get(id=candidato_id)
-    return render(request, 'editarCandidato.html', {"editar": editar})
+    id = int(decode(candidato_id))
+    editar = Candidato.objects.get(id=id)
+    candidato = {
+        'id': encode(str(editar.id)),
+        'nombre': editar.nombre,
+        'apellido': editar.apellido,
+        'partido': editar.partido,
+    }
+    return render(request, 'editarCandidato.html', {"editar": candidato})
 
-def edicionCandidato(request,candidato_id):
-    # id = request.POST['txtId']
+def edicionCandidato(request):
+    id = int(decode(request.POST['txtId']))
     nombre = request.POST['txtNombre']
     apellido = request.POST['txtApellido']
     partido = request.POST['txtPartido']
 
-    editar = Candidato.objects.get(id=candidato_id)
-    # editar.id = id
+    editar = Candidato.objects.get(id=id)
     editar.nombre = nombre
     editar.apellido = apellido
     editar.partido = partido
@@ -151,6 +204,8 @@ def edicionCandidato(request,candidato_id):
 
 
 def eliminarCandidato(request, candidato_id):
-    eliminar = Candidato.objects.get(id=candidato_id)
+    id = int(decode(candidato_id))
+    eliminar = Candidato.objects.get(id=id)
     eliminar.delete()
     return redirect('/candidatos/')
+

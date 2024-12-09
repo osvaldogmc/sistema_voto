@@ -9,9 +9,7 @@
                 <div class="card-body">
                     <form action="/edicionCandidato/" method="POST">
                         {% csrf_token %}
-                        <div class="form-group mb-3">
-                            <input type="text" id="txtId" name="txtId" value="{{editar.id}}" class="form-control" placeholder="ID" maxlength="30" readonly required>
-                        </div>
+                        <input type="hidden" id="txtId" name="txtId" value="{{editar.id}}" class="form-control" placeholder="ID" maxlength="30" readonly required>
                         <div class="form-group mb-3">
                             <input type="text" id="txtNombre" name="txtNombre" value="{{editar.nombre}}" class="form-control" placeholder="Nombre" maxlength="30" required>
                         </div>
