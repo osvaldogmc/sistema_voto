@@ -151,6 +151,7 @@ def signout(request):
     logout(request)
     return redirect('ingreso')
 
+
 @login_required
 def editCandidatos(request):
     candi = Candidato.objects.all()
@@ -176,18 +177,27 @@ def registrarCandidato(request):
         print(f'Error en la linea {format(sys.exc_info()[-1].tb_lineno)} {type(e).__name__} {e}')
     return redirect('/candidatos/')
 
-
+@login_required
 def editarCandidato(request, candidato_id):
-    id = int(decode(candidato_id))
-    editar = Candidato.objects.get(id=id)
-    candidato = {
-        'id': encode(str(editar.id)),
-        'nombre': editar.nombre,
-        'apellido': editar.apellido,
-        'partido': editar.partido,
-    }
-    return render(request, 'editarCandidato.html', {"editar": candidato})
+    try:
+        id = int(decode(candidato_id))
+        candidato = Candidato.objects.get(id=id)
 
+        if Voto.objects.filter(candidato=candidato).exists():
+            return redirect('/candidatos/', {'mensaje': 'No se puede editar este candidato porque ya ha recibido votos.'})
+        
+        candidato_data = {
+            'id': encode(str(candidato.id)),
+            'nombre': candidato.nombre,
+            'apellido': candidato.apellido,
+            'partido': candidato.partido,
+        }
+
+        return render(request, 'editarCandidato.html', {"editar": candidato_data})
+    except Candidato.DoesNotExist:
+        return redirect('/candidatos/', {'mensaje': 'Candidato no encontrado.'})
+
+login_required
 def edicionCandidato(request):
     id = int(decode(request.POST['txtId']))
     nombre = request.POST['txtNombre']
@@ -202,10 +212,19 @@ def edicionCandidato(request):
 
     return redirect('/candidatos/')
 
-
+@login_required
 def eliminarCandidato(request, candidato_id):
-    id = int(decode(candidato_id))
-    eliminar = Candidato.objects.get(id=id)
-    eliminar.delete()
-    return redirect('/candidatos/')
+    try:
+        id = int(decode(candidato_id))
+        candidato = Candidato.objects.get(id=id)
+
+        if Voto.objects.filter(candidato=candidato).exists():
+            return redirect('/candidatos/', {'mensaje': 'No se puede eliminar, el candidato ya ha recibido votos!'})
+
+
+        candidato.delete()
+        return redirect('/candidatos/')
+
+    except Candidato.DoesNotExist:
+        return redirect('/candidatos/', {'mensaje': 'Candidato no encontrado.'})
 

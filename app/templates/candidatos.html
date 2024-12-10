@@ -1,54 +1,65 @@
 {% extends 'base.html' %}
 
-    {% block content %}
-        <div class="row">
-            <div class="col-sm-12 col-md-6 col-lg-4 col-xl-4">
-                <h2>Gestión de candidatos</h2>
-                <div class="card">
-                    <div class="card-body">
-                        <form action="/registrarCandidato/" method="POST">
-                            {% csrf_token %}
-                            <div class="form-group mb-3">
-                                <input type="text" id="txtNombre" name="txtNombre" class="form-control" placeholder="Nombre" maxlength="30" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <input type="text" id="txtApellido" name="txtApellido" class="form-control" placeholder="Apellido" maxlength="30" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <input type="text" id="txtPartido" name="txtPartido" class="form-control" placeholder="Partido" maxlength="30" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-6 col-lg-8 col-xl-8">
-                <h1>Listado de candidatos</h1>
-                <div class="table-responsive py-2">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>Partido</th>                                
-                                <th colspan="2">Opciones</th>                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for c in candi %}
-                            <tr>
-                                <td>{{c.nombre}}</td>
-                                <td>{{c.apellido}}</td>
-                                <td>{{c.partido}}</td>
-                                <td><a href="/editarCandidato/{{c.id}}" class="btn btn-info">Editar</a></td>
-                                <td><a href="/eliminarCandidato/{{c.id}}" class="btn btn-danger">Eliminar</a></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg-4 col-xl-4">
+            <h2>Gestión de candidatos</h2>
+
+          
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="/registrarCandidato/" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtNombre" name="txtNombre" class="form-control" placeholder="Nombre" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtApellido" name="txtApellido" class="form-control" placeholder="Apellido" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <input type="text" id="txtPartido" name="txtPartido" class="form-control" placeholder="Partido" maxlength="30" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    {% endblock %}
+        <div class="col-sm-12 col-md-6 col-lg-8 col-xl-8">
+            <h1>Listado de candidatos</h1>
+            {% if mensaje %}
+                <div class="alert alert-warning">{{ mensaje }}</div>
+            {% endif %}
+            <div class="table-responsive py-2">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Partido</th>                                
+                            <th colspan="2">Opciones</th>                                
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in candi %}
+                        <tr>
+                            <td>{{c.nombre}}</td>
+                            <td>{{c.apellido}}</td>
+                            <td>{{c.partido}}</td>
+                            {% if not c.voto_set.all %}
+                                <td><a href="/editarCandidato/{{c.id}}" class="btn btn-info">Editar</a></td>
+                                <td><a href="/eliminarCandidato/{{c.id}}" class="btn btn-danger">Eliminar</a></td>
+                            {% else %}
+                                <td><button class="btn btn-info" disabled>Editar</button></td>
+                                <td><button class="btn btn-danger" disabled>Eliminar</button></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
