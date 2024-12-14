@@ -219,12 +219,12 @@ def eliminarCandidato(request, candidato_id):
         candidato = Candidato.objects.get(id=id)
 
         if Voto.objects.filter(candidato=candidato).exists():
-            return redirect('/candidatos/', {'mensaje': 'No se puede eliminar, el candidato ya ha recibido votos!'})
+            return redirect('/candidatos/')
 
 
         candidato.delete()
         return redirect('/candidatos/')
 
     except Candidato.DoesNotExist:
-        return redirect('/candidatos/', {'mensaje': 'Candidato no encontrado.'})
+        return redirect('/candidatos/')
 
